@@ -76,6 +76,7 @@
     <Compile Include="TestServerMessageCollection.cs" />
     <Compile Include="TestService.cs" />
     <Compile Include="TestStoragePasswordCollection.cs" />
+    <None Include="Data\badFieldOrder.xml" />
     <Content Include="Data\Client\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

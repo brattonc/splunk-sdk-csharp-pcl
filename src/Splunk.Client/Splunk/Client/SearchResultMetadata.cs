@@ -20,8 +20,10 @@
 
 namespace Splunk.Client
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.IO;
     using System.Threading.Tasks;
     using System.Xml;
 
@@ -84,11 +86,37 @@ namespace Splunk.Client
         public async Task ReadXmlAsync(XmlReader reader)
         {
             var fieldNames = new List<string>();
-
+            
             this.FieldNames = new ReadOnlyCollection<string>(fieldNames);
             this.IsFinal = true;
 
             if (!await reader.MoveToDocumentElementAsync("results").ConfigureAwait(false))
+            {
+                return;
+            }
+
+            int i = 0;
+            string s = String.Empty;
+            while (await reader.ReadToNextSiblingAsync("results").ConfigureAwait(false))
+            {
+                i++;
+                try
+                {
+                    s = reader.ReadOuterXml();
+                    if (s.Contains("<fieldOrder>")) {
+                        // At this point, we know we finally have fields
+                        break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    // TODO: handle exceptions; we'll probably get an exception if we never find <fieldOrder>
+                }
+            }
+
+            // Build up a new XmlReader from the string we captured
+            reader = XmlReader.Create(new StringReader(s), reader.Settings);
+            if (!await reader.ReadAsync().ConfigureAwait(false))
             {
                 return;
             }

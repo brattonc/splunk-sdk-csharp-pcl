@@ -19,6 +19,7 @@ namespace Splunk.Client.UnitTests
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Net.Http;
     using System.Xml;
     using System.Xml.Linq;
     using System.Threading.Tasks;
@@ -47,6 +48,23 @@ namespace Splunk.Client.UnitTests
             Assert.Equal(
                 "AtomFeed(Title=jobs, Author=Splunk, Id=https://localhost:8089/services/search/jobs, Updated=5/29/2014 12:13:01 PM)",
                 feed.ToString());
+        }
+
+        [Trait("unit-test", "Splunk.Client.AtomFeed")]
+        [Fact]
+        // TODO: move this test to a more appropriate place
+        public async Task CheckFieldOrder()
+        {   
+
+            var xml = File.ReadAllText(Path.Combine(Directory, "..", "badFieldOrder.xml"));
+
+            var response = new HttpResponseMessage();
+            response.Content = new StringContent(xml);
+            var searchResultStream = await SearchResultStream.CreateAsync(response);
+            foreach (var result in searchResultStream)
+            {
+                System.Diagnostics.Debug.WriteLine(result.ToString());
+            }
         }
 
         public static async Task<AtomEntry> ReadEntry(string path)
